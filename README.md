@@ -73,6 +73,38 @@ gradlew.bat run
 
 URLs are hardcoded to `http://localhost:11434`. To use another host, change `EmbeddingClient` and `OllamaClient`.
 
+## Fine-tuning and improving quality
+
+In this project, “fine-tuning” usually means **tuning the RAG pipeline** (data, chunking, retrieval, and prompts), not training new model weights. The code does not perform gradient-based fine-tuning; you would do that outside the app (e.g. with Ollama custom models, LoRA tooling, or a separate training stack) if you need a domain-specific LLM or embedder.
+
+### Tune retrieval (fastest wins)
+
+| Lever | Where | What to try |
+|--------|--------|-------------|
+| **Chunk size** | `TextChunker.chunk(doc, 500)` in `Main.java` | Smaller chunks (~300–400) can sharpen answers when facts are dense; larger chunks (~700–1000) help when answers need surrounding paragraphs. PDFs with tables/lists may need experimentation. |
+| **Chunk overlap** | Not implemented today | Adding overlap (e.g. 50–100 characters) between consecutive chunks reduces cases where a boundary cuts a sentence in half. Extend `TextChunker` or the loop in `Main` to step by `chunkSize - overlap`. |
+| **Top-k** | `store.search(queryVector, 3)` | Increase `k` (e.g. 5–10) when the model misses relevant passages; decrease when the prompt gets noisy or the model copies unrelated snippets. |
+| **HNSW index** | `VectorStore.java` (`withM`, `withEf`) | Higher `M` / `ef` can improve recall at the cost of build time and memory; defaults are a reasonable starting point for small corpora. |
+| **Embedding model** | `EmbeddingClient.java` | Swapping to another Ollama embedding model may help domain terminology; always update `VectorStore` **dimension** in `Main.java` and rebuild the index. |
+
+### Tune generation
+
+| Lever | Where | What to try |
+|--------|--------|-------------|
+| **System-style instruction** | Prompt string in `Main.java` (`Answer only from context...`) | Add rules: cite section names, respond “not in context” when unsure, bullet format for procedures, or NPCI-specific terminology glossaries in the prompt. |
+| **Chat model** | `OllamaClient.java` (`mistral`) | Stronger or more instruction-tuned models (whatever you `ollama pull`) often follow constraints better; keep embedding and chat models independent. |
+| **Ollama parameters** | `OllamaClient` JSON body | You can extend the request with options such as `temperature` (lower for factual Q&A), `num_ctx`, or `num_predict` if you need longer answers—see [Ollama’s generate API](https://github.com/ollama/ollama/blob/main/docs/api.md). |
+
+### Tune data and workflow
+
+- **Corpus** — Add missing manuals, normalize duplicates, and prefer clean `.txt` exports when PDF extraction is noisy.
+- **Incremental index** — Loading a saved index when files have not changed avoids stale vectors and speeds iteration while you only change prompts or `k`.
+- **Evaluation** — Keep a small list of real questions and expected themes; change one knob at a time so retrieval vs. generation issues stay separable.
+
+### True model fine-tuning (optional)
+
+If you need **weight-level** adaptation (e.g. issuer-specific phrasing beyond RAG), explore training or adapters for your chosen stack, then **serve that model through Ollama** and point `OllamaClient` / `EmbeddingClient` at the new model name. The Java RAG shell stays the same; you rebuild the vector index if the embedding model changes.
+
 ## Generated files
 
 After a run, the workspace may contain:
