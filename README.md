@@ -87,10 +87,6 @@ These are listed in `.gitignore` so they are not committed by mistake. Delete th
 - **Full re-index on every startup** — `Main` always loads `docs/`, re-chunks, re-embeds, and overwrites the saved index. To skip re-indexing after the first run, you would need to add a branch that calls `VectorStore.load(...)` when the index files already exist.
 - **`DocumentLoader`** — Walks a folder tree for plain text files; `Main` uses its own `loadDocs` with `.txt` and `.pdf` support instead.
 
-## Disclaimer
-
-This repository is a **personal technical demo**. **NPCI**, **3DS**, and **ACS** are subject to their owners’ trademarks and policies. Only include documents you are allowed to store and process. Do not commit confidential or proprietary PDFs to a public GitHub repo unless permitted.
-
 ## License
 
 Specify your preferred license in a `LICENSE` file when you publish the repository (this repo does not include one by default).
