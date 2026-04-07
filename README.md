@@ -1,6 +1,6 @@
 # NPCI 3DS ACS — Local RAG Q&A
 
-A small **retrieval-augmented generation (RAG)** demo in **Java** that answers questions about the **NPCI 3DS ACS** product using your own document corpus. Everything runs **locally**: embeddings and the chat model are served by [Ollama](https://ollama.com/), so no external API keys are required.
+A small **retrieval-augmented generation (RAG)** demo in **Java** that answers questions about the payments product using your own document corpus. Everything runs **locally**: embeddings and the chat model are served by [Ollama](https://ollama.com/), so no external API keys are required.
 
 ## What it does
 
