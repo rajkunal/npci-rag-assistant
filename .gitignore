@@ -44,3 +44,4 @@ bin/
 ### RAG index artifacts (regenerate on run) ###
 vector.index
 text.store
+docs/*.pdf
